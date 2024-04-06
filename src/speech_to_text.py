@@ -1,3 +1,4 @@
+import os
 import threading
 import speech_recognition as sr
 
@@ -19,11 +20,14 @@ def recognize_google_thread(audio, language, results):
 def recognize_speech():
     with sr.Microphone() as source:
         print("Please speak...")
+        os.system(f"aplay wake_up_sound.wav")
         audio = recognizer.listen(source)
     # English, Mandarin, Cantonese
-    languages = ["en-US", "zh-CN", "yue-Hant-HK"]
+    languages = ["en-US", "ca-ES", "es-ES"]
     results = []
-
+    
+    #recognize_google_thread(audio, "en-US", results)
+    
     #multithreading the recognition in different languages
     threads = []
     for language in languages:
