@@ -28,27 +28,29 @@ def piperTTS(text, language):
     text = text.replace("'", "\'")
 
     # Prepare the command
-    command = [
+    tts_command = [
         './env/bin/piper', 
         '--model', model_file, 
         '--output-raw'
     ]
 
+    play_command = ['aplay', '-r', '22050', '-f', 'S16_LE', '-t', 'raw', '-']
+
     # Run the TTS engine and capture output
-    piper_process = subprocess.Popen(
-        command, stdout=subprocess.PIPE, 
-        input=text, text=True
+    tts_process = subprocess.Popen(
+        tts_command, stdout=subprocess.PIPE, 
+        stdin=subprocess.PIPE, text=True
     )
-    audio_data = piper_process.communicate()[0]
 
      # Play the audio
-    play_command = ['aplay', '-r', '22050', '-f', 'S16_LE', '-t', 'raw', '-']
     play_process = subprocess.Popen(
-        play_command, stdin=subprocess.PIPE
+        play_command, stdin=tts_process.stdout
     )
-    play_process.communicate(input=audio_data)
+    
+    tts_process.stdin.write(text)
+    tts_process.stdin.close()
 
-    piper_process.wait()
+    tts_process.wait()
     play_process.wait()
 
 def text_to_speech(text, language, filename="output.wav"):
