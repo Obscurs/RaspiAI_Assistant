@@ -6,6 +6,8 @@ from src.config import setting_TTS_piper_CA_model
 import os
 import subprocess
 
+BASE_MODEL_PATH  = "models/"
+
 def googleTTS(text, language, filename):
     print("text_to_speech: gTTS")
     tts = gTTS(text, lang=language)
@@ -15,22 +17,39 @@ def googleTTS(text, language, filename):
     subprocess.Popen(["cvlc", "--play-and-exit", "--no-repeat", filename])
     
 def piperTTS(text, language):
-    model_file = "models/"
-    text = text.replace("'", "\'")
-    if language == "ca":
-        model_file = model_file + setting_TTS_piper_CA_model
-    elif language == "en":
-        model_file = model_file + setting_TTS_piper_EN_model
-    elif language == "es":
-        model_file = model_file + setting_TTS_piper_ES_model
+    model_suffix = {
+        "ca": setting_TTS_piper_CA_model,
+        "en": setting_TTS_piper_EN_model,
+        "es": setting_TTS_piper_ES_model
+    }.get(language, "")
     
-    model_file = model_file + ".onnx"
-    command = f"""
-    echo '{text}' | \
-    ./env/bin/piper --model {model_file} --output-raw | \
-    aplay -r 22050 -f S16_LE -t raw -
-    """
-    subprocess.run(command, shell=True, text=True, check=True)
+    model_file = f"{BASE_MODEL_PATH}{model_suffix}.onnx"
+
+    text = text.replace("'", "\'")
+
+    # Prepare the command
+    command = [
+        './env/bin/piper', 
+        '--model', model_file, 
+        '--output-raw'
+    ]
+
+    # Run the TTS engine and capture output
+    piper_process = subprocess.Popen(
+        command, stdout=subprocess.PIPE, 
+        input=text, text=True
+    )
+    audio_data = piper_process.communicate()[0]
+
+     # Play the audio
+    play_command = ['aplay', '-r', '22050', '-f', 'S16_LE', '-t', 'raw', '-']
+    play_process = subprocess.Popen(
+        play_command, stdin=subprocess.PIPE
+    )
+    play_process.communicate(input=audio_data)
+
+    piper_process.wait()
+    play_process.wait()
 
 def text_to_speech(text, language, filename="output.wav"):
     if setting_TTS_method == "gTTS":
