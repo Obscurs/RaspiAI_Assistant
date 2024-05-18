@@ -7,7 +7,8 @@ import os
 import signal
 from src.speech_to_text import recognize_speech
 from src.text_to_speech import text_to_speech
-from src.translator import translate
+#from src.translator import translate
+from src.config import setting_Audio_Volume
 from src.config import porcupine_access_key
 from src.config import setting_Wakeup_model
 from src.config import setting_TTS_lang
@@ -61,9 +62,10 @@ async def wake_up_detect():
                     try:
                         if lang == "en-US" or lang == "es-ES" or lang == "en-ES":
                             print("Got it! Please wait for a while")
+                            os.system(f"amixer set Master {setting_Audio_Volume/1.5}%")
                             os.system(f"aplay searching.wav")
                             gpt_result = await asyncio.wait_for(asyncio.gather(chat_gpt.gpt(query, lang)), timeout=45)
-                            gpt_result = gpt_result[0]['choices'][0]['message']["content"]
+                            gpt_result = gpt_result[0].choices[0].message.content
                         else:
                             print("Error parsing")
                             os.system(f"aplay finish.wav")
@@ -78,7 +80,7 @@ async def wake_up_detect():
                     
                     print("Output response:")
                     if gpt_result != '':
-                        text_to_speech(response, setting_TTS_lang)
+                        text_to_speech(response, setting_TTS_lang, chat_gpt)
                         os.system(f"aplay finish.wav")
                         
                     audio_stream.start_stream()

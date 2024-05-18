@@ -6,8 +6,13 @@ from src.config import setting_TTS_piper_CA_model
 import os
 import subprocess
 
-BASE_MODEL_PATH  = "models/"
 
+
+BASE_MODEL_PATH  = "models/"
+    
+def openaiTTS(text, language, chat_gpt):
+    chat_gpt.tts(text, language)
+    
 def googleTTS(text, language, filename):
     print("text_to_speech: gTTS")
     tts = gTTS(text, lang=language)
@@ -53,8 +58,10 @@ def piperTTS(text, language):
     tts_process.wait()
     play_process.wait()
 
-def text_to_speech(text, language, filename="output.wav"):
+def text_to_speech(text, language, chat_gpt, filename="output.wav"):
     if setting_TTS_method == "gTTS":
         googleTTS(text, language, filename)
     elif setting_TTS_method == "piper":
         piperTTS(text, language)
+    elif setting_TTS_method == "openai":
+        openaiTTS(text, language, chat_gpt)

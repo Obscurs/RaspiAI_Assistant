@@ -2,6 +2,10 @@ SpeechRecognition
 #fastlangid
 pyaudio
 openai
+pyttsx3
+pygame
+speechrecognition
+setuptools
 pvporcupine
 googletrans==4.0.0-rc1
 gtts

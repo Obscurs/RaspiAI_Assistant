@@ -2,6 +2,7 @@ import os
 import threading
 import speech_recognition as sr
 
+from src.config import setting_Audio_Volume
 recognizer = sr.Recognizer()
 
 #thread for recognize_google()
@@ -20,7 +21,9 @@ def recognize_google_thread(audio, language, results):
 def recognize_speech():
     with sr.Microphone() as source:
         print("Please speak...")
+        os.system(f"amixer set Master {setting_Audio_Volume/2.0}%")
         os.system(f"aplay wake_up_sound.wav")
+        
         audio = recognizer.listen(source)
     # English, Mandarin, Cantonese
     languages = ["en-US", "ca-ES", "es-ES"]
